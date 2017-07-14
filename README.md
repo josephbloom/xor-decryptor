@@ -1,4 +1,4 @@
-# xor-decryptor
+# Xor Decryptor
 A simple repeating-xor encryption and decryption tool.
 
 This is a simple repeating-xor encryption and decryption tool. This tool is not
