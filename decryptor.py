@@ -309,8 +309,8 @@ Start by selecting a .txt file with the (base64 encoded) encrypted message.
 The text file doesn't necessarily need to be produced from this program. Any 
 base64 encoded, repeating-xor encrypted message will do. Next, select the range
 of possible keysizes, the number of characters, the key may have by choosing 
-the lowest guess and then the highest guess. The program will make some 
-calculations and will try to guess that was used to encrypt the message. If it
+the lowest guess and then the highest guess. After many calculations, the 
+program will try to guess the key that was used to encrypt the message. If it
 chooses a likely key, but that key still produces some non-printable characters,
 then the correct key may not have been in that range of keysizes (or the message
 was ecrypted by some other means). It will also show you the decrypted message
