@@ -3,49 +3,49 @@
 import base64
 
 def decrypt():
-    print
-    print "Encrypted message must be encoded with base64."
+    print()
+    print("Encrypted message must be encoded with base64.")
     while True:
-        newfile = raw_input("\nName of .txt file (ex. encyrptedfile.txt):\nType 'exit' to quit.\n")
+        newfile = input("\nName of .txt file (ex. encyrptedfile.txt):\nType 'exit' to quit.\n")
         if newfile.lower() == "exit":
             main()
         if not newfile[len(newfile) - 4:] == ".txt":
-            print "\n*** .txt files only, please. ***"
+            print("\n*** .txt files only, please. ***")
             continue
         else:
             try:
                 encryptedfile = open(newfile,"r")
             except IOError as err:
-                print err
+                print(err)
                 continue
         encryptedmessage = encryptedfile.read()
         encryptedfile.close()
         try:
-            encryptedmessage = base64.b64decode(encryptedmessage)
+            encryptedmessage = base64.b64decode(encryptedmessage.encode()).decode()
         except:
-            print "\nThis message is not base64 encoded."
+            print("\nThis message is not base64 encoded.")
             continue
         break
     while True:
         try:
-            bottomrange = int(raw_input("Smallest size key to test: "))
+            bottomrange = int(input("Smallest size key to test: "))
             if bottomrange < 1:
-                print "\n*** MINIMUM IS 1 ***\n"
+                print("\n*** MINIMUM IS 1 ***\n")
                 continue
             break
         except:
-            print "\n*** POSITIVE INTEGERS ONLY ***\n"
+            print("\n*** POSITIVE INTEGERS ONLY ***\n")
 
     while True:
         try:
-            toprange = int(raw_input("Biggest size key to test: "))
+            toprange = int(input("Biggest size key to test: "))
             if toprange < bottomrange:
-                print "\n*** MUST NOT BE LOWER THAN SMALLEST KEY "+bottomrange+" ***\n"
+                print("\n*** MUST NOT BE LOWER THAN SMALLEST KEY "+str(bottomrange)+" ***\n")
                 continue
             break
         except:
-            print "\n*** POSITIVE INTEGERS ONLY ***\n"
-    print "\n****************************************************\n" 
+            print("\n*** POSITIVE INTEGERS ONLY ***\n")
+    print("\n****************************************************\n" )
     keysize = range(bottomrange,toprange+1)
 
     def finddistance(input1, input2): # Hemming Distance
@@ -63,6 +63,7 @@ def decrypt():
 
     keysizeresults = {}
     for size in keysize:
+        print("trying size "+str(size))
         ## take first 2 sets of bytes, equal in size to 'size', find hemming distance
         ## repeat many times, add the distances together, divide by number of distance, then divide by 'size'
         ## distance from finddistance() is 'normalized' by dividing it by size
@@ -71,8 +72,9 @@ def decrypt():
             try:
                 d.append(float(finddistance(encryptedmessage[size*i:size*(i+1)],encryptedmessage[size*(i+1):size*(i+2)])))
             except TypeError: ## If the encrypted message is too short for the current loop and input2 has nothing
-                # print "2nd keysize block empty while trying keysize "+str(size)+"."
+                print("2nd keysize block empty while trying keysize "+str(size)+".")
                 break
+        # print(d)
         thedistance = sum(d)/float(size)/(len(d))
         ## keysize and distance are added to dict
         keysizeresults[thedistance] = size
@@ -80,16 +82,16 @@ def decrypt():
     probablekeysizes = []
     ## sort least to greatest by key (distance) and display least 3
     for i in sorted(keysizeresults.keys())[0:4]:
-        print "keysize "+str(keysizeresults[i])+" with distance "+str(i)
+        print("keysize "+str(keysizeresults[i])+" with distance "+str(i))
         probablekeysizes += [keysizeresults[i]]
-    print
+    print()
     keychars = dict()
     
     ## Using the likely sizes, found the likeliest chars for each size then score each potential key
     for size in probablekeysizes:
         keychars[size] = []
-        print "\n--------------------\n"
-        print "trying key size "+str(size)+"..."
+        print("\n--------------------\n")
+        print("trying key size "+str(size)+"...")
         ## Break encrypted message into blocks of likely keysizes (size)
         blockedmessage = [encryptedmessage[i:i+size] for i in range(0,len(encryptedmessage),size)]
         ## create new blocks from first byte of each block, then 2nd byte of each block, etc.
@@ -102,7 +104,7 @@ def decrypt():
                     tempchars.append(block[j])
                 except IndexError:
                     if errorraised == 0:
-                        print "index error at index "+str(blockedmessage.index(block))+" out of "+str(len(blockedmessage)-1)
+                        print("index error at index "+str(blockedmessage.index(block))+" out of "+str(len(blockedmessage)-1))
                         errorraised = 1
             newblockedmessage.append(''.join(tempchars))
             j += 1
@@ -132,35 +134,35 @@ def decrypt():
             if addprintable == 1:
                 allprintable += len(newstring)
             keychars[size].append(temprecord)
-        print "\nFor keysize "+str(size)+":"
+        print("\nFor keysize "+str(size)+":")
         averagescore = 0.0
         for letter in keychars[size]:
-            print "Letter "+letter[0]+" at position "+str(letter[1])+" with score "+str(letter[2])
+            print("Letter "+letter[0]+" at position "+str(letter[1])+" with score "+str(letter[2]))
             averagescore += letter[2]
         averagescore = averagescore/size
         if allprintable >= len(encryptedmessage): ## Advantage to keys that only produce printable characters
-            print "allprintable = "+str(allprintable)
-            print "encrypted message length = "+str(len(encryptedmessage))
+            print("allprintable = "+str(allprintable))
+            print("encrypted message length = "+str(len(encryptedmessage)))
             averagescore += 10
-        print "Average Score: "+str(averagescore)
+        print("Average Score: "+str(averagescore))
         keychars[size].append(averagescore)
 
     ## remove duplicate keys that are doubled, tripled, etc. ('password' vs 'passwordpassword')
     ## and add their average score to the original
-    # print "* * *"
-    # for i in keychars.iterkeys():
-    #     print i
+    # print("* * *")
+    # for i in keychars:
+    #     print(i)
     todelete = []
-    for i in keychars.iterkeys():
+    for i in keychars:
         iword = ''.join([keychars[i][b][0] for b in range(0,i)])
-        for j in keychars.iterkeys():
+        for j in keychars:
             jword = ''.join([keychars[j][b][0] for b in range(0,j)])
             multiplesfound = jword.count(iword)
             if multiplesfound > 1 and \
             multiplesfound == float(len(jword)) / len(iword):
                 keychars[i][i] += keychars[j][j]
                 todelete.append(j)
-    # print todelete
+    # print(todelete)
     for i in todelete:
         try:
             del keychars[i]
@@ -169,19 +171,19 @@ def decrypt():
 
 
 
-    themax = max([keychars[i][i] for i in keychars.iterkeys()]) ## get highest average score among keysizes 
-    for i in keychars.iterkeys():
+    themax = max([keychars[i][i] for i in keychars]) ## get highest average score among keysizes 
+    for i in keychars:
         if keychars[i][i] == themax:
-            print "\n****************************************************"
-            print "Best key guess is:"
+            print("\n****************************************************")
+            print("Best key guess is:")
             thekey = ''.join([keychars[i][j][0] for j in range(0,i)])
             ## if key repeats, only show one rep
             a = (thekey + thekey).find(thekey, 1, -1)
             if not a == -1:
                 thekey = thekey[:a]
-            print "---> "+thekey+" <---"
-            print "With average score: "+str(keychars[i][i])
-            print "****************************************************\n"
+            print("---> "+thekey+" <---")
+            print("With average score: "+str(keychars[i][i]))
+            print("****************************************************\n")
 
     ## Use key to decrypt and display message
     ordkey = [ord(i) for i in thekey]
@@ -194,25 +196,25 @@ def decrypt():
         if keycount == len(ordkey):
             keycount = 0
 
-    print "--------------------"
-    print "message length = "+str(len(decryptedmessage))
+    print("--------------------")
+    print("message length = "+str(len(decryptedmessage)))
     printableletters = 0
     for c in decryptedmessage:
         if 32<=ord(c)<=126 or ord(c) == 10:
             printableletters += 1
-    print "printable letters = "+str(printableletters)
-    print "--------------------\n"
+    print("printable letters = "+str(printableletters))
+    print("--------------------\n")
     if not printableletters == len(encryptedmessage):
-        print "Decrypted message includes non-printable characters."
-        print "Keysize range may be too large, or not include correct keysize."
+        print("Decrypted message includes non-printable characters.")
+        print("Keysize range may be too large, or not include correct keysize.")
         choice = ""
         while choice != 'y' and choice != 'n':
-            choice = raw_input("Show decrypted message anyway? (y/n)").lower()
+            choice = input("Show decrypted message anyway? (y/n)").lower()
             if choice =='y':
-                print decryptedmessage
+                print(decryptedmessage)
     else:
-        print decryptedmessage
-    print "\n****************************************************\n"
+        print(decryptedmessage)
+    print("\n****************************************************\n")
     main()
 
 ##########################################################
@@ -221,41 +223,41 @@ def decrypt():
 
 def encrypt():
     while True:
-        choice = raw_input("\nInput message method:\n(m) Manually input\n(f) use .txt file\n'exit' to go back to menu\nSelect: ").lower()
+        choice = input("\nInput message method:\n(m) Manually input\n(f) use .txt file\n'exit' to go back to menu\nSelect: ").lower()
         if choice == "m":
-            message = raw_input("What's the message?\n")
+            message = input("What's the message?\n")
             break
         if choice == "f":
-            messagefile = raw_input("What's the file?\n")
+            messagefile = input("What's the file?\n")
             if not messagefile[len(messagefile) - 4:] == ".txt":
-                print "\n*** .txt files only, please. ***"
+                print("\n*** .txt files only, please. ***")
                 continue
             try:
                 messagefile = open(messagefile,"r")
             except IOError as err:
-                print err
+                print(err)
                 continue
             message = messagefile.read()
             messagefile.close()
-            # print message
+            # print(message)
             break
         if choice == "exit":
             main()
     
     while True:
-        choice = raw_input("\nInput key method:\n(m) Manually input\n(f) use .txt file\n'exit' to go back to menu\nSelect: ").lower()
+        choice = input("\nInput key method:\n(m) Manually input\n(f) use .txt file\n'exit' to go back to menu\nSelect: ").lower()
         if choice == "m":
-            key = raw_input("What's the key?\n")
+            key = input("What's the key?\n")
             break
         if choice == "f":
-            keyfile = raw_input("What's the file?\n")
+            keyfile = input("What's the file?\n")
             if not newfile[len(newfile) - 4:] == ".txt":
-                print "\n*** .txt files only, please. ***"
+                print("\n*** .txt files only, please. ***")
                 continue
             try:
                 keyfile = open(messagefile,"r")
             except IOError as err:
-                print err
+                print(err)
                 continue
             key = keyfile.read()
             keyfile.close()
@@ -272,9 +274,8 @@ def encrypt():
         keycount += 1
         if keycount >= len(key):
             keycount = 0
-    encryptedmessage = base64.b64encode(''.join(encryptedmessage))
-
-    encryptedfile = open(raw_input("Name encrypted message file:\n"),'w')
+    encryptedmessage = base64.b64encode(''.join(encryptedmessage).encode()).decode()
+    encryptedfile = open(input("Name encrypted message file:\n"),'w')
     encryptedfile.write(encryptedmessage)
     encryptedfile.close()
     main()
@@ -284,7 +285,7 @@ def encrypt():
 ##########################################################
 
 def about():
-    print """
+    print("""
 ****************************************************
 
 Made by Joseph Bloom
@@ -296,7 +297,7 @@ coding practice.
 
 The two main options are Encrypt and Decrypt. You can encrypt a message by 
 entering it manually or by using a simple text file (.txt), and then choosing
-a key to encrypt themessage with, also either by manual input or by selecting a
+a key to encrypt the message with, also either by manual input or by selecting a
 text file with the key in it. A text file with the encrypted message is 
 produced, and is base64 encoded so that the message can still be parsed, if not
 read intelligibly. This is because an unencoded encrypted message may contain 
@@ -321,7 +322,10 @@ This particular tool guesses based on how much the decrypted message looks like
 normal English, or any language with the same set of letters. So any encrypted
 message that uses non-standard English characters, like accented letters 
 (é, ü, etc.), different alphabets like Korean or Urdu, or "alternative" 
-alphabets like leet (1337), will not be decrypted. 
+alphabets like leet (1337), will not be decrypted. Additionally, the guesses
+at the correct key tend to be more accurate the longer the encrypted message is,
+since that means more non-english characters may be produced by more incorrect
+keys.
 
 Again, this is for demonstration purposes only, and not serious use. 
 I hope you enjoy it!
@@ -330,7 +334,7 @@ www.JosephBloomWorks.com
 https://github.com/josephbloom
 
 ****************************************************
-    """
+    """)
     main()
 
 ##########################################################
@@ -345,7 +349,7 @@ Menu:
 (e) Encrypt
 (x) Exit
 Select: """
-    choice = raw_input(mainmenu).lower()
+    choice = input(mainmenu).lower()
 
     if choice == "x":
         exit()
