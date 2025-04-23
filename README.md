@@ -8,7 +8,7 @@ coding practice.
 
 The two main options are Encrypt and Decrypt. You can encrypt a message by 
 entering it manually or by using a simple text file (.txt), and then choosing
-a key to encrypt themessage with, also either by manual input or by selecting a
+a key to encrypt the message with, also either by manual input or by selecting a
 text file with the key in it. A text file with the encrypted message is 
 produced, and is base64 encoded so that the message can still be parsed, if not
 read intelligibly. This is because an unencoded encrypted message may contain 
@@ -21,8 +21,8 @@ Start by selecting a .txt file with the (base64 encoded) encrypted message.
 The text file doesn't necessarily need to be produced from this program. Any 
 base64 encoded, repeating-xor encrypted message will do. Next, select the range
 of possible keysizes, the number of characters, the key may have by choosing 
-the lowest guess and then the highest guess. The program will make some 
-calculations and will try to guess that was used to encrypt the message. If it
+the lowest guess and then the highest guess. After many calculations, the 
+program will try to guess the key that was used to encrypt the message. If it
 chooses a likely key, but that key still produces some non-printable characters,
 then the correct key may not have been in that range of keysizes (or the message
 was ecrypted by some other means). It will also show you the decrypted message
@@ -33,7 +33,10 @@ This particular tool guesses based on how much the decrypted message looks like
 normal English, or any language with the same set of letters. So any encrypted
 message that uses non-standard English characters, like accented letters 
 (é, ü, etc.), different alphabets like Korean or Urdu, or "alternative" 
-alphabets like leet (1337), will not be decrypted. 
+alphabets like leet (1337), will not be decrypted. Additionally, the guesses
+at the correct key tend to be more accurate the longer the encrypted message is,
+since that means more non-english characters may be produced by more incorrect
+keys.
 
 Again, this is for demonstration purposes only, and not serious use. 
 I hope you enjoy it!
